@@ -10,9 +10,7 @@ app.use(express.static('public'));
 app.use(bodyParser.json({ type: 'application/*+json' }));
 
 var jsonParser = bodyParser.json();
-
 var buzzwordsArray = [];
-
 var runningTotal = 0;
 
 app.get('/', (req, res) =>{
@@ -30,29 +28,27 @@ app.post('/buzzword', jsonParser, (req, res) => {
   } else {
     console.log('Adding buzzword a success');
     buzzwordsArray.push(req.body);
-    console.log(req.body.buzzWord);
-    console.log('the array right now: ');
-    console.log(buzzwordsArray);
     res.send({ "success": true });
   }
 });
 
 app.put('/buzzword', jsonParser, (req, res) =>{
-
   for(var i = 0; i < buzzwordsArray.length; i++){
-    if(buzzwordsArray[i].buzzWord === req.body.buzzWord){
+    if(buzzwordsArray[i].buzzWord === req.body.buzzWord && req.body.heard === true){
       runningTotal = runningTotal + buzzwordsArray[i].points;
-      console.log('Buzzword exists, current score: ' + runningTotal);
-
+      console.log('Buzzword exists, heard = true, current score: ' + runningTotal);
       buzzwordsArray[i].heard = req.body.heard;
-      console.log(buzzwordsArray);
-
+      res.send({ "success": true , newScore: runningTotal});
+      return;
+    } else if (buzzwordsArray[i].buzzWord === req.body.buzzWord && req.body.heard !== true){
+      runningTotal = runningTotal - buzzwordsArray[i].points;
+      console.log('Buzzword exists, heard = false, current score: ' + runningTotal);
+      buzzwordsArray[i].heard = req.body.heard;
       res.send({ "success": true , newScore: runningTotal});
       return;
     }
   }
-  runningTotal = runningTotal - buzzwordsArray[i].points;
-  console.log('Buzzword doesn\'t exist, current score: ' + runningTotal);
+  console.log('Buzzword doesn\'t exist, no change to current score: ' + runningTotal);
   res.send({ "success": false , newScore: runningTotal});
   return;
 });
@@ -62,7 +58,6 @@ app.delete('/buzzword', jsonParser, (req, res) =>{
     if(buzzwordsArray[i].buzzWord === req.body.buzzWord){
       console.log('That element exists, let\'s delete it');
       buzzwordsArray.splice(i,1);
-      console.log(buzzwordsArray);
       res.send({ "success": true });
       return;
     }
@@ -76,7 +71,7 @@ app.post('/reset', (req, res) =>{
   runningTotal = 0;
   console.log('Running total has been cleared: ' + runningTotal);
   buzzwordsArray = [];
-  console.log('buzzwordsArray has been cleared: ' + buzzwordsArray);
+  console.log('buzzwordsArray has been cleared, shown below');
   console.log(buzzwordsArray);
   res.send({ "success": true });
 });
