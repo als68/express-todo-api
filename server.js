@@ -11,39 +11,75 @@ app.use(bodyParser.json({ type: 'application/*+json' }));
 
 var jsonParser = bodyParser.json();
 
-var buzzwords =[];
+var buzzwordsArray = [];
+
+var runningTotal = 0;
 
 app.get('/', (req, res) =>{
   res.send('Welcome!');
 });
 
 app.get('/buzzwords', (req, res) =>{
-    res.send({'All buzzwords currently: ': buzzwords});
-  });
+  res.send({'All buzzwords currently: ': buzzwordsArray});
+});
 
 app.post('/buzzword', jsonParser, (req, res) => {
-  if(buzzwords.length >= 5){
+  if(buzzwordsArray.length >= 5){
     console.log('Error: Only 5 buzzwords allowed at a time');
     res.send({ "success": false });
   } else {
     console.log('Adding buzzword a success');
-    buzzwords.push(req.body);
-    console.log(buzzwords);
+    buzzwordsArray.push(req.body);
+    console.log(req.body.buzzWord);
+    console.log('the array right now: ');
+    console.log(buzzwordsArray);
     res.send({ "success": true });
   }
 });
 
-app.put('/buzzword', (req, res) =>{
-    res.send('This is where the PUT request should be');
-  });
+app.put('/buzzword', jsonParser, (req, res) =>{
 
-app.delete('/buzzword', (req, res) =>{
-    res.send('This is where the DELETE request should be');
-  });
+  for(var i = 0; i < buzzwordsArray.length; i++){
+    if(buzzwordsArray[i].buzzWord === req.body.buzzWord){
+      runningTotal = runningTotal + buzzwordsArray[i].points;
+      console.log('Buzzword exists, current score: ' + runningTotal);
+
+      buzzwordsArray[i].heard = req.body.heard;
+      console.log(buzzwordsArray);
+
+      res.send({ "success": true , newScore: runningTotal});
+      return;
+    }
+  }
+  runningTotal = runningTotal - buzzwordsArray[i].points;
+  console.log('Buzzword doesn\'t exist, current score: ' + runningTotal);
+  res.send({ "success": false , newScore: runningTotal});
+  return;
+});
+
+app.delete('/buzzword', jsonParser, (req, res) =>{
+  for(var i = 0; i < buzzwordsArray.length; i++){
+    if(buzzwordsArray[i].buzzWord === req.body.buzzWord){
+      console.log('That element exists, let\'s delete it');
+      buzzwordsArray.splice(i,1);
+      console.log(buzzwordsArray);
+      res.send({ "success": true });
+      return;
+    }
+  }
+  console.log('Can\'t delete an item that doesn\'t exist');
+  res.send({ "success": false });
+  return;
+});
 
 app.post('/reset', (req, res) =>{
-    res.send('This is where the POST RESET request should be');
-  });
+  runningTotal = 0;
+  console.log('Running total has been cleared: ' + runningTotal);
+  buzzwordsArray = [];
+  console.log('buzzwordsArray has been cleared: ' + buzzwordsArray);
+  console.log(buzzwordsArray);
+  res.send({ "success": true });
+});
 
 const server = app.listen(3000, function(){
   let host = server.address().address;
