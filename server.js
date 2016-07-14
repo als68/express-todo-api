@@ -1,9 +1,11 @@
 const express = require('express');
 const app = express();
 
+//Routes
+//const mwVal = require('./middlewareValidation');
+
 //Middleware
 const bodyParser = require('body-parser');
-
 app.use(express.static('public'));
 
 //Make Middleware useable
@@ -21,7 +23,45 @@ app.get('/buzzwords', (req, res) =>{
   res.send({'All buzzwords currently: ': buzzwordsArray});
 });
 
-app.post('/buzzword', jsonParser, (req, res) => {
+function validationCheck(req, res, next){
+  switch(req.method){
+    case 'POST':
+      if(req.route.path === '/buzzword' && Object.keys(req.body)[0] === 'buzzWord' && Object.keys(req.body)[1] === 'points' && req.body.buzzWord !== undefined && req.body.points !== undefined && typeof req.body.buzzWord === 'string' && typeof req.body.points === 'number'){
+        console.log('THIS IS A VALID POST BUZZWORD REQUEST');
+        return next();
+      } else if(req.route.path === '/reset' && Object.keys(req.body)[0] === 'reset' && req.body.reset !== undefined && typeof req.body.reset === 'boolean' && req.body.reset === true){
+        console.log('THIS IS A VALID RESET REQUEST');
+        return next();
+      } else {
+        console.log('THIS IS NOT A VALID POST REQUEST');
+      }
+      break;
+
+    case 'PUT':
+      if(req.route.path === '/buzzword' && Object.keys(req.body)[0] === 'buzzWord' && Object.keys(req.body)[1] === 'heard' && req.body.buzzWord !== undefined && req.body.heard !== undefined && typeof req.body.buzzWord === 'string' && typeof req.body.heard === 'boolean'){
+        console.log('THIS IS A VALID PUT REQUEST');
+        return next();
+      } else {
+        console.log('THIS IS NOT A VALID PUT REQUEST');
+      }
+      break;
+
+    case 'DELETE':
+      if(req.route.path === '/buzzword' && Object.keys(req.body)[0] === 'buzzWord' && req.body.buzzWord !== undefined && typeof req.body.buzzWord === 'string'){
+        console.log('THIS IS A VALID DELETE REQUEST');
+        return next();
+      } else {
+        console.log('THIS IS NOT A VALID DELETE REQUEST');
+      }
+      break;
+
+    default:
+      console.log('THIS IS AN INVALID REQUEST');
+  }
+}
+
+
+app.post('/buzzword', jsonParser, validationCheck, (req, res) => {
   if(buzzwordsArray.length >= 5){
     console.log('Error: Only 5 buzzwords allowed at a time');
     res.send({ "success": false });
@@ -32,7 +72,7 @@ app.post('/buzzword', jsonParser, (req, res) => {
   }
 });
 
-app.put('/buzzword', jsonParser, (req, res) =>{
+app.put('/buzzword', jsonParser, validationCheck, (req, res) =>{
   for(var i = 0; i < buzzwordsArray.length; i++){
     if(buzzwordsArray[i].buzzWord === req.body.buzzWord && req.body.heard === true){
       runningTotal = runningTotal + buzzwordsArray[i].points;
@@ -53,7 +93,7 @@ app.put('/buzzword', jsonParser, (req, res) =>{
   return;
 });
 
-app.delete('/buzzword', jsonParser, (req, res) =>{
+app.delete('/buzzword', jsonParser, validationCheck, (req, res) =>{
   for(var i = 0; i < buzzwordsArray.length; i++){
     if(buzzwordsArray[i].buzzWord === req.body.buzzWord){
       console.log('That element exists, let\'s delete it');
@@ -67,7 +107,7 @@ app.delete('/buzzword', jsonParser, (req, res) =>{
   return;
 });
 
-app.post('/reset', (req, res) =>{
+app.post('/reset', jsonParser, validationCheck, (req, res) =>{
   runningTotal = 0;
   console.log('Running total has been cleared: ' + runningTotal);
   buzzwordsArray = [];
@@ -76,8 +116,10 @@ app.post('/reset', (req, res) =>{
   res.send({ "success": true });
 });
 
-const server = app.listen(3000, function(){
+/*const server = app.listen(3000, function(){
   let host = server.address().address;
   let port = server.address().port;
   console.log('Listening at port 3000');
-});
+});*/
+
+module.exports = app;
