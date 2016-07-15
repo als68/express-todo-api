@@ -1,9 +1,6 @@
 const express = require('express');
 const app = express();
 
-//Routes
-//const mwVal = require('./middlewareValidation');
-
 //Middleware
 const bodyParser = require('body-parser');
 app.use(express.static('public'));
@@ -115,11 +112,5 @@ app.post('/reset', jsonParser, validationCheck, (req, res) =>{
   console.log(buzzwordsArray);
   res.send({ "success": true });
 });
-
-/*const server = app.listen(3000, function(){
-  let host = server.address().address;
-  let port = server.address().port;
-  console.log('Listening at port 3000');
-});*/
 
 module.exports = app;

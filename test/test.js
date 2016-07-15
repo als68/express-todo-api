@@ -1,9 +1,6 @@
 'use strict';
 
 const superTest = require('supertest');
-
-//THURSDAY MORNING -- get paths correct
-
 const app = require('.././server');
 const chai = require('chai');
 const expect = chai.expect;
@@ -23,15 +20,14 @@ describe('GET /buzzwords', function(){
       .get('/buzzwords')
       .expect(200, done);
   });
+  it('should return error if URI incorrect', function(done){
+    superTest(app)
+      .get('/buzzwords123')
+      .expect(404, done);
+  });
 });
 
 describe('POST /buzzword', function(){
-  it('request has been successfully made', function(done){
-    superTest(app)
-      .post('/buzzword')
-      .send({"buzzWord": "yo1", "points": 14})
-      .expect(200, done);
-  });
   it('request has been successfully made', function(done){
     superTest(app)
       .post('/buzzword')
